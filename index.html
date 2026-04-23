@@ -1,0 +1,1279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The System — TrueClarity Plans</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #0B1838;
+    color: #FFFFFF;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    min-height: 100vh;
+    padding: 20px;
+    padding-top: 0;
+  }
+  .container { max-width: 1400px; margin: 0 auto; }
+
+  /* Sticky action bar */
+  .action-bar {
+    position: sticky;
+    top: 0;
+    background: #0B1838;
+    padding: 14px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    z-index: 100;
+    margin-bottom: 20px;
+  }
+  .action-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .quick-btn {
+    background: #000;
+    border: 1px solid rgba(255,255,255,0.2);
+    color: #FFF;
+    padding: 10px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .quick-btn:hover { border-color: #00C853; }
+  .quick-btn:active { transform: scale(0.96); }
+  .quick-btn.primary { background: #00C853; color: #000; border-color: #00C853; }
+  .quick-btn.primary:hover { background: #00E676; }
+  .quick-btn .count { background: rgba(255,255,255,0.15); padding: 2px 8px; border-radius: 4px; font-size: 11px; }
+  .quick-btn.primary .count { background: rgba(0,0,0,0.2); color: #000; font-weight: 900; }
+  .undo-btn {
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.15);
+    color: #8B9DC3;
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 11px;
+  }
+  .undo-btn:hover { color: #FFF; border-color: rgba(255,255,255,0.3); }
+
+  /* Header */
+  .header {
+    text-align: center;
+    padding: 20px 0 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 24px;
+  }
+  .header h1 {
+    font-size: 42px;
+    font-weight: 900;
+    letter-spacing: 4px;
+    color: #FFFFFF;
+    margin-bottom: 6px;
+  }
+  .header p {
+    font-size: 12px;
+    color: #8B9DC3;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+  }
+
+  /* Date Filters */
+  .date-filters {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+  .date-btn {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #8B9DC3;
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  .date-btn:hover { border-color: #FFFFFF; color: #FFFFFF; }
+  .date-btn.active { background: #000; border-color: #FFF; color: #FFF; }
+
+  .section-title {
+    font-size: 12px;
+    color: #8B9DC3;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    margin-top: 28px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-title::before {
+    content: '';
+    width: 3px;
+    height: 14px;
+    background: #FFFFFF;
+  }
+
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+  .card {
+    background: #000;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 10px;
+    padding: 18px;
+    transition: border 0.2s;
+  }
+  .card:hover { border-color: rgba(255,255,255,0.3); }
+  .card-label {
+    font-size: 11px;
+    color: #8B9DC3;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 8px;
+  }
+  .card-value {
+    font-size: 28px;
+    font-weight: 800;
+    color: #FFFFFF;
+  }
+  .card-sub {
+    font-size: 11px;
+    color: #8B9DC3;
+    margin-top: 4px;
+  }
+
+  .benchmark {
+    display: inline-block;
+    background: rgba(255,255,255,0.08);
+    color: #8B9DC3;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 10px;
+    margin-left: 6px;
+  }
+  .benchmark.pass { background: rgba(0,200,83,0.2); color: #00C853; }
+  .benchmark.warn { background: rgba(255,255,255,0.05); color: #8B9DC3; }
+
+  .hero-card {
+    grid-column: span 2;
+    background: #000;
+    border: 1px solid rgba(255,255,255,0.25);
+  }
+  .hero-card .card-value { font-size: 36px; color: #00C853; }
+
+  .hunt-panel {
+    background: #000;
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 24px;
+  }
+  .hunt-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  .hunt-title {
+    font-size: 13px;
+    color: #FFF;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    font-weight: 700;
+  }
+  .hunt-score {
+    font-size: 42px;
+    font-weight: 900;
+    color: #00C853;
+  }
+  .progress-bar {
+    background: rgba(255,255,255,0.08);
+    height: 10px;
+    border-radius: 5px;
+    overflow: hidden;
+    margin-bottom: 8px;
+  }
+  .progress-fill {
+    height: 100%;
+    background: #00C853;
+    border-radius: 5px;
+    transition: width 0.3s;
+  }
+  .progress-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: #8B9DC3;
+    letter-spacing: 1px;
+  }
+  .points-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+    gap: 10px;
+    margin-top: 20px;
+  }
+  .point-item {
+    background: #0B1838;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 8px;
+    padding: 12px;
+    text-align: center;
+  }
+  .point-label {
+    font-size: 10px;
+    color: #8B9DC3;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+  }
+  .point-pts {
+    font-size: 10px;
+    color: #8B9DC3;
+    margin-bottom: 6px;
+  }
+  .point-value {
+    font-size: 20px;
+    font-weight: 700;
+    color: #FFF;
+  }
+
+  .breakdown-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 20px;
+  }
+  @media (max-width: 900px) { .breakdown-grid { grid-template-columns: 1fr; } }
+  .table-card {
+    background: #000;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 10px;
+    padding: 20px;
+    overflow-x: auto;
+  }
+  .table-card h3 {
+    font-size: 13px;
+    color: #FFF;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+  table { width: 100%; border-collapse: collapse; }
+  th {
+    text-align: left;
+    font-size: 10px;
+    color: #8B9DC3;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    padding: 8px 6px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    font-weight: 600;
+  }
+  th.right, td.right { text-align: right; }
+  td {
+    padding: 10px 6px;
+    font-size: 13px;
+    color: #FFF;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+  tr:last-child td { border-bottom: none; font-weight: 700; }
+  td.money { color: #00C853; font-weight: 600; }
+  .empty-note { color: #8B9DC3; font-size: 12px; text-align: center; padding: 20px; }
+
+  /* Footer */
+  .footer {
+    text-align: center;
+    padding: 30px 0 10px;
+    color: #8B9DC3;
+    font-size: 11px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    margin-top: 40px;
+    letter-spacing: 1px;
+  }
+  .footer-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-bottom: 16px;
+  }
+  .footer-btn {
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.2);
+    color: #8B9DC3;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .footer-btn:hover { color: #FFF; border-color: #FFF; }
+  .footer-btn.danger:hover { color: #FF3B30; border-color: #FF3B30; }
+
+  /* Modal */
+  .modal-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.8);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 20px;
+  }
+  .modal-overlay.active { display: flex; }
+  .modal {
+    background: #0B1838;
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 12px;
+    padding: 28px;
+    max-width: 500px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  .modal h2 {
+    font-size: 18px;
+    margin-bottom: 20px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+  .form-group { margin-bottom: 16px; }
+  .form-group label {
+    display: block;
+    font-size: 11px;
+    color: #8B9DC3;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 6px;
+  }
+  .form-group input, .form-group select {
+    width: 100%;
+    background: #000;
+    border: 1px solid rgba(255,255,255,0.2);
+    color: #FFF;
+    padding: 10px 12px;
+    border-radius: 6px;
+    font-size: 14px;
+  }
+  .form-group input:focus, .form-group select:focus {
+    outline: none;
+    border-color: #00C853;
+  }
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .modal-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+    justify-content: flex-end;
+  }
+  .btn-cancel, .btn-submit {
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  .btn-cancel {
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.2);
+    color: #8B9DC3;
+  }
+  .btn-submit {
+    background: #00C853;
+    border: 1px solid #00C853;
+    color: #000;
+  }
+  .calc-preview {
+    background: rgba(0,200,83,0.1);
+    border: 1px solid rgba(0,200,83,0.3);
+    border-radius: 8px;
+    padding: 12px;
+    margin-top: 8px;
+    font-size: 13px;
+  }
+  .calc-preview strong { color: #00C853; }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #00C853;
+    color: #000;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s, transform 0.2s;
+    z-index: 2000;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(-6px); }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- STICKY ACTION BAR -->
+  <div class="action-bar">
+    <div class="action-row">
+      <button class="quick-btn" onclick="inc('dials')">+1 DIAL <span class="count" id="cnt-dials">0</span></button>
+      <button class="quick-btn" onclick="openContactPopup(event)">+1 CONTACT <span class="count" id="cnt-contacts">0</span></button>
+      <button class="quick-btn" onclick="inc('appts')">+1 APPT <span class="count" id="cnt-appts">0</span></button>
+      <button class="quick-btn" onclick="inc('pitches')">+1 PITCH <span class="count" id="cnt-pitches">0</span></button>
+      <button class="quick-btn" onclick="inc('followups')">+1 FOLLOW-UP <span class="count" id="cnt-followups">0</span></button>
+      <button class="quick-btn primary" onclick="openAppModal()">+ LOG APP</button>
+      <button class="quick-btn" onclick="openLeadModal()">+ LEADS</button>
+      <button class="undo-btn" onclick="undo()">↶ UNDO</button>
+    </div>
+  </div>
+
+  <div class="header">
+    <h1>THE SYSTEM</h1>
+    <p>TrueClarity Plans · Built To Duplicate</p>
+  </div>
+
+  <div class="date-filters">
+    <button class="date-btn active" data-scope="today" onclick="setScope('today', this)">Today</button>
+    <button class="date-btn" data-scope="week" onclick="setScope('week', this)">This Week</button>
+    <button class="date-btn" data-scope="month" onclick="setScope('month', this)">This Month</button>
+    <button class="date-btn" data-scope="quarter" onclick="setScope('quarter', this)">3 Months</button>
+  </div>
+
+  <!-- HUNT PANEL -->
+  <div class="hunt-panel">
+    <div class="hunt-header">
+      <div>
+        <div class="hunt-title" id="hunt-title">The Hunt · Today</div>
+        <div style="font-size: 11px; color: #8B9DC3; margin-top: 4px;" id="hunt-target">Daily Target: 150 pts</div>
+      </div>
+      <div class="hunt-score" id="hunt-score">0</div>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="hunt-progress" style="width: 0%;"></div></div>
+    <div class="progress-labels">
+      <span>0</span><span id="hunt-percent">0% OF TARGET</span><span id="hunt-goal">150</span>
+    </div>
+    <div class="points-grid">
+      <div class="point-item"><div class="point-label">Dials</div><div class="point-pts">+1 EA</div><div class="point-value" id="p-dials">0</div></div>
+      <div class="point-item"><div class="point-label">Contacts</div><div class="point-pts">+5 EA</div><div class="point-value" id="p-contacts">0</div></div>
+      <div class="point-item"><div class="point-label">Appts</div><div class="point-pts">+15 EA</div><div class="point-value" id="p-appts">0</div></div>
+      <div class="point-item"><div class="point-label">Pitches</div><div class="point-pts">+25 EA</div><div class="point-value" id="p-pitches">0</div></div>
+      <div class="point-item"><div class="point-label">Follow-ups</div><div class="point-pts">+10 EA</div><div class="point-value" id="p-followups">0</div></div>
+      <div class="point-item"><div class="point-label">Apps</div><div class="point-pts">+100 EA</div><div class="point-value" id="p-apps">0</div></div>
+    </div>
+  </div>
+
+  <!-- ACTIVITY -->
+  <div class="section-title">Activity</div>
+  <div class="cards-grid" id="activity-cards"></div>
+
+  <!-- CONVERSION -->
+  <div class="section-title">Conversion Rates</div>
+  <div class="cards-grid" id="conversion-cards"></div>
+
+  <!-- EFFICIENCY -->
+  <div class="section-title">Efficiency</div>
+  <div class="cards-grid" id="efficiency-cards"></div>
+
+  <!-- REVENUE -->
+  <div class="section-title">Revenue</div>
+  <div class="cards-grid" id="revenue-cards"></div>
+
+  <!-- BREAKDOWNS -->
+  <div class="section-title">Breakdowns</div>
+  <div class="breakdown-grid" id="breakdowns"></div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <div class="footer-actions">
+      <button class="footer-btn" onclick="exportCSV()">Export CSV</button>
+      <button class="footer-btn" onclick="viewRawData()">View Raw Data</button>
+      <button class="footer-btn danger" onclick="resetData()">Reset All Data</button>
+    </div>
+    Commission calculated at 8.5-month advance · USHA SR AGT webform 1135 effective 4/24/2026<br>
+    TrueClarity Plans LLC · Built to Duplicate
+  </div>
+
+</div>
+
+<!-- APP MODAL -->
+<div class="modal-overlay" id="app-modal">
+  <div class="modal" style="max-width: 620px;">
+    <h2>Log Application</h2>
+
+    <div style="margin-bottom:16px;">
+      <label style="display:block; font-size:11px; color:#8B9DC3; text-transform:uppercase; letter-spacing:1px; margin-bottom:8px;">Products on this deal</label>
+      <div id="line-items"></div>
+      <button type="button" onclick="addLineItem()" style="background:transparent; border:1px dashed rgba(255,255,255,0.3); color:#00C853; padding:10px; border-radius:6px; width:100%; cursor:pointer; font-size:12px; font-weight:700; letter-spacing:1px; text-transform:uppercase;">+ ADD PRODUCT / RIDER</button>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label>State</label>
+        <select id="app-state">
+          <option value="FL">FL</option><option value="AL">AL</option><option value="AK">AK</option><option value="AZ">AZ</option><option value="AR">AR</option><option value="CA">CA</option><option value="CO">CO</option><option value="CT">CT</option><option value="DE">DE</option><option value="GA">GA</option><option value="HI">HI</option><option value="ID">ID</option><option value="IL">IL</option><option value="IN">IN</option><option value="IA">IA</option><option value="KS">KS</option><option value="KY">KY</option><option value="LA">LA</option><option value="ME">ME</option><option value="MD">MD</option><option value="MA">MA</option><option value="MI">MI</option><option value="MN">MN</option><option value="MS">MS</option><option value="MO">MO</option><option value="MT">MT</option><option value="NE">NE</option><option value="NV">NV</option><option value="NH">NH</option><option value="NJ">NJ</option><option value="NM">NM</option><option value="NC">NC</option><option value="ND">ND</option><option value="OH">OH</option><option value="OK">OK</option><option value="OR">OR</option><option value="PA">PA</option><option value="RI">RI</option><option value="SC">SC</option><option value="SD">SD</option><option value="TN">TN</option><option value="TX">TX</option><option value="UT">UT</option><option value="VT">VT</option><option value="VA">VA</option><option value="WA">WA</option><option value="WV">WV</option><option value="WI">WI</option><option value="WY">WY</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Lead Source</label>
+        <select id="app-source">
+          <option>Dynasty Exclusive</option>
+          <option>True Exclusive 3x</option>
+          <option>Exclusive JUMBO</option>
+          <option>Shared JUMBO</option>
+          <option>Performance Mix</option>
+          <option>High Quality Aged</option>
+          <option>RedMedia</option>
+          <option>Vanillasoft Gold</option>
+          <option>Vanillasoft Aged</option>
+          <option>Referral</option>
+          <option>Current Client</option>
+          <option>Inbound</option>
+          <option>Other</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Close Type</label>
+        <select id="app-close">
+          <option>1st Call</option>
+          <option>2nd Call</option>
+          <option>3+ Calls</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Appt Channel</label>
+        <select id="app-channel">
+          <option>SMS</option>
+          <option>Dial</option>
+          <option>Referral</option>
+          <option>Inbound</option>
+        </select>
+      </div>
+    </div>
+    <div class="calc-preview" id="calc-preview">
+      Add a product to see calculation
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('app-modal')">Cancel</button>
+      <button class="btn-submit" onclick="submitApp()">Log Application</button>
+    </div>
+  </div>
+</div>
+
+<!-- LEAD MODAL -->
+<div class="modal-overlay" id="lead-modal">
+  <div class="modal">
+    <h2>Log Lead Purchase</h2>
+    <div class="form-group">
+      <label>Lead Source</label>
+      <select id="lead-source" onchange="updateLeadCost()">
+        <option value="Dynasty Exclusive|35">Dynasty Exclusive ($35)</option>
+        <option value="True Exclusive 3x|17">True Exclusive 3x ($17)</option>
+        <option value="Exclusive JUMBO|60">Exclusive JUMBO ($60)</option>
+        <option value="Shared JUMBO|15">Shared JUMBO ($15)</option>
+        <option value="Performance Mix|26">Performance Mix (~$26)</option>
+        <option value="High Quality Aged|0.25">High Quality Aged ($0.25)</option>
+        <option value="RedMedia|37">RedMedia ($37)</option>
+        <option value="Vanillasoft Gold|0">Vanillasoft Gold (Free)</option>
+        <option value="Vanillasoft Aged|0">Vanillasoft Aged (Free)</option>
+        <option value="Other|0">Other (custom)</option>
+      </select>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Number of Leads</label>
+        <input type="number" id="lead-count" placeholder="10" oninput="updateLeadCost()">
+      </div>
+      <div class="form-group">
+        <label>Total Cost ($)</label>
+        <input type="number" id="lead-cost" step="0.01" placeholder="350">
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('lead-modal')">Cancel</button>
+      <button class="btn-submit" onclick="submitLeads()">Log Leads</button>
+    </div>
+  </div>
+</div>
+
+<!-- CONTACT POPUP -->
+<div id="contact-popup" style="position:absolute; display:none; background:#000; border:1px solid rgba(255,255,255,0.2); border-radius:8px; padding:8px; z-index:200; box-shadow:0 4px 12px rgba(0,0,0,0.5);">
+  <button class="quick-btn" style="margin-right:6px;" onclick="logContact('phone')">📞 PHONE</button>
+  <button class="quick-btn" onclick="logContact('sms')">💬 SMS</button>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ============================================================
+// STATE & STORAGE
+// ============================================================
+const STORAGE_KEY = 'truecarity-the-system-v1';
+
+function loadData() {
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if (!raw) return { activity: [], apps: [], leads: [], history: [] };
+  try { return JSON.parse(raw); } catch { return { activity: [], apps: [], leads: [], history: [] }; }
+}
+
+function saveData(data) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
+
+let data = loadData();
+
+// ============================================================
+// DATE HELPERS
+// ============================================================
+function todayStr() {
+  return new Date().toISOString().split('T')[0];
+}
+
+function inScope(dateStr, scope) {
+  const d = new Date(dateStr + 'T00:00:00');
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+  if (scope === 'today') return dateStr === todayStr();
+  if (scope === 'week') {
+    // Week starts Friday per user's preference
+    const dayOfWeek = today.getDay();
+    const daysSinceFri = (dayOfWeek + 2) % 7;
+    const weekStart = new Date(today);
+    weekStart.setDate(today.getDate() - daysSinceFri);
+    return d >= weekStart && d <= today;
+  }
+  if (scope === 'month') {
+    return d.getMonth() === today.getMonth() && d.getFullYear() === today.getFullYear();
+  }
+  if (scope === 'quarter') {
+    const threeMonthsAgo = new Date(today);
+    threeMonthsAgo.setMonth(today.getMonth() - 3);
+    return d >= threeMonthsAgo && d <= today;
+  }
+  return false;
+}
+
+// ============================================================
+// ACTIVITY LOGGING
+// ============================================================
+function todayRecord() {
+  const t = todayStr();
+  let rec = data.activity.find(a => a.date === t);
+  if (!rec) {
+    rec = { date: t, dials: 0, contacts: 0, phoneContacts: 0, smsContacts: 0, appts: 0, pitches: 0, followups: 0 };
+    data.activity.push(rec);
+  }
+  // Backfill for older records
+  if (rec.phoneContacts === undefined) rec.phoneContacts = 0;
+  if (rec.smsContacts === undefined) rec.smsContacts = 0;
+  return rec;
+}
+
+function inc(field) {
+  const rec = todayRecord();
+  rec[field] = (rec[field] || 0) + 1;
+  data.history.push({ type: 'inc', field, date: rec.date });
+  saveData(data);
+  render();
+  toast('+1 ' + field.toUpperCase());
+}
+
+function openContactPopup(e) {
+  e.stopPropagation();
+  const popup = document.getElementById('contact-popup');
+  const rect = e.currentTarget.getBoundingClientRect();
+  popup.style.display = 'block';
+  popup.style.top = (rect.bottom + window.scrollY + 6) + 'px';
+  popup.style.left = (rect.left + window.scrollX) + 'px';
+  // Close on outside click
+  setTimeout(() => {
+    document.addEventListener('click', closeContactPopup, { once: true });
+  }, 0);
+}
+
+function closeContactPopup() {
+  document.getElementById('contact-popup').style.display = 'none';
+}
+
+function logContact(channel) {
+  const rec = todayRecord();
+  rec.contacts = (rec.contacts || 0) + 1;
+  if (channel === 'phone') rec.phoneContacts = (rec.phoneContacts || 0) + 1;
+  if (channel === 'sms') rec.smsContacts = (rec.smsContacts || 0) + 1;
+  data.history.push({ type: 'contact', channel, date: rec.date });
+  saveData(data);
+  closeContactPopup();
+  render();
+  toast('+1 ' + channel.toUpperCase() + ' CONTACT');
+}
+
+function undo() {
+  if (data.history.length === 0) { toast('NOTHING TO UNDO'); return; }
+  const last = data.history.pop();
+  if (last.type === 'inc') {
+    const rec = data.activity.find(a => a.date === last.date);
+    if (rec && rec[last.field] > 0) rec[last.field]--;
+  } else if (last.type === 'contact') {
+    const rec = data.activity.find(a => a.date === last.date);
+    if (rec) {
+      if (rec.contacts > 0) rec.contacts--;
+      if (last.channel === 'phone' && rec.phoneContacts > 0) rec.phoneContacts--;
+      if (last.channel === 'sms' && rec.smsContacts > 0) rec.smsContacts--;
+    }
+  } else if (last.type === 'app') {
+    data.apps = data.apps.filter(a => a.id !== last.id);
+  } else if (last.type === 'lead') {
+    data.leads = data.leads.filter(l => l.id !== last.id);
+  }
+  saveData(data);
+  render();
+  toast('UNDONE');
+}
+
+// ============================================================
+// APP MODAL
+// ============================================================
+
+// Product catalog with rates (first year commission %)
+const PRODUCTS = [
+  { name: 'PremierAdvantage', rate: 22.9 },
+  { name: 'SecureAdvantage', rate: 23.9 },
+  { name: 'PremierChoice', rate: 22.9 },
+  { name: 'HealthAccess Suite', rate: 18.75 },
+  { name: 'SA Conversion', rate: 2.6 },
+  { name: 'MedGuard Critical Illness', rate: 84.0 },
+  { name: 'Accident Protector', rate: 63.0 },
+  { name: 'Income Protector', rate: 63.0 },
+  { name: 'PremierVision', rate: 42.25 },
+  { name: 'Dental / SecureDental', rate: 22.0 },
+  { name: 'Life Protector II', rate: 84.0 },
+  { name: 'ACA Marketplace', rate: 15.0 },
+  { name: 'Private/Off-Marketplace', rate: 18.0 },
+  { name: 'Other', rate: 20.0 }
+];
+
+let lineItemCounter = 0;
+
+function openAppModal() {
+  lineItemCounter = 0;
+  document.getElementById('line-items').innerHTML = '';
+  addLineItem(); // start with one line
+  document.getElementById('calc-preview').innerHTML = 'Enter premium to see calculation';
+  document.getElementById('app-modal').classList.add('active');
+}
+
+function addLineItem() {
+  lineItemCounter++;
+  const id = 'line-' + lineItemCounter;
+  const container = document.getElementById('line-items');
+  const productOptions = PRODUCTS.map(p => `<option value="${p.name}|${p.rate}">${p.name} (${p.rate}%)</option>`).join('');
+
+  const row = document.createElement('div');
+  row.id = id;
+  row.style.cssText = 'display:grid; grid-template-columns: 1fr 1.5fr auto; gap:8px; margin-bottom:8px; align-items:center;';
+  row.innerHTML = `
+    <input type="number" class="line-premium" step="0.01" placeholder="$/mo" oninput="updateCalc()" style="background:#000; border:1px solid rgba(255,255,255,0.2); color:#FFF; padding:10px; border-radius:6px; font-size:13px;">
+    <select class="line-product" onchange="updateCalc()" style="background:#000; border:1px solid rgba(255,255,255,0.2); color:#FFF; padding:10px; border-radius:6px; font-size:13px;">${productOptions}</select>
+    <button type="button" onclick="removeLineItem('${id}')" style="background:transparent; border:1px solid rgba(255,255,255,0.15); color:#8B9DC3; padding:8px 12px; border-radius:6px; cursor:pointer; font-size:14px;">×</button>
+  `;
+  container.appendChild(row);
+  updateCalc();
+}
+
+function removeLineItem(id) {
+  const el = document.getElementById(id);
+  if (el && document.querySelectorAll('#line-items > div').length > 1) {
+    el.remove();
+    updateCalc();
+  } else {
+    toast('AT LEAST ONE PRODUCT REQUIRED');
+  }
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('active');
+}
+
+function collectLineItems() {
+  const items = [];
+  document.querySelectorAll('#line-items > div').forEach(row => {
+    const premium = parseFloat(row.querySelector('.line-premium').value) || 0;
+    const [productName, rateStr] = row.querySelector('.line-product').value.split('|');
+    const rate = parseFloat(rateStr);
+    if (premium > 0) {
+      items.push({
+        premium,
+        product: productName,
+        rate,
+        av: premium * 12,
+        advance: premium * (rate / 100) * 8.5,
+        fullYear: premium * (rate / 100) * 12
+      });
+    }
+  });
+  return items;
+}
+
+function updateCalc() {
+  const items = collectLineItems();
+  if (items.length === 0) {
+    document.getElementById('calc-preview').innerHTML = 'Enter premium to see calculation';
+    return;
+  }
+  const totalAV = items.reduce((s, i) => s + i.av, 0);
+  const totalAdvance = items.reduce((s, i) => s + i.advance, 0);
+  const totalFullYear = items.reduce((s, i) => s + i.fullYear, 0);
+
+  let breakdown = items.map(i => `<div style="font-size:11px; color:#8B9DC3; margin-bottom:2px;">${i.product}: $${i.premium.toFixed(2)}/mo × ${i.rate}% × 8.5 = <strong style="color:#00C853;">$${i.advance.toFixed(2)}</strong></div>`).join('');
+
+  document.getElementById('calc-preview').innerHTML = `
+    ${breakdown}
+    <div style="border-top:1px solid rgba(255,255,255,0.1); margin-top:6px; padding-top:6px;">
+      <div style="font-size:13px;">Total AV: <strong style="color:#00C853;">$${totalAV.toFixed(2)}</strong></div>
+      <div style="font-size:13px;">Advance Commission: <strong style="color:#00C853;">$${totalAdvance.toFixed(2)}</strong></div>
+      <div style="font-size:13px;">Full Year Value: <strong style="color:#00C853;">$${totalFullYear.toFixed(2)}</strong></div>
+    </div>
+  `;
+}
+
+function submitApp() {
+  const items = collectLineItems();
+  if (items.length === 0) { alert('Enter at least one product with a premium'); return; }
+
+  const totalAV = items.reduce((s, i) => s + i.av, 0);
+  const totalAdvance = items.reduce((s, i) => s + i.advance, 0);
+  const totalFullYear = items.reduce((s, i) => s + i.fullYear, 0);
+  const totalPremium = items.reduce((s, i) => s + i.premium, 0);
+
+  // Primary product = highest premium line item
+  const primaryProduct = items.sort((a, b) => b.premium - a.premium)[0].product;
+
+  const app = {
+    id: 'app_' + Date.now(),
+    date: todayStr(),
+    items, // full line item breakdown
+    premium: totalPremium,
+    product: primaryProduct,
+    productCount: items.length,
+    state: document.getElementById('app-state').value,
+    source: document.getElementById('app-source').value,
+    closeType: document.getElementById('app-close').value,
+    channel: document.getElementById('app-channel').value,
+    av: totalAV,
+    advance: totalAdvance,
+    fullYear: totalFullYear
+  };
+  data.apps.push(app);
+  data.history.push({ type: 'app', id: app.id });
+  saveData(data);
+  closeModal('app-modal');
+  render();
+  toast('APP LOGGED · $' + totalAdvance.toFixed(0) + ' COMMISSION');
+}
+
+// ============================================================
+// LEAD MODAL
+// ============================================================
+function openLeadModal() {
+  document.getElementById('lead-count').value = '';
+  document.getElementById('lead-cost').value = '';
+  document.getElementById('lead-modal').classList.add('active');
+}
+
+function updateLeadCost() {
+  const count = parseInt(document.getElementById('lead-count').value) || 0;
+  const [name, costStr] = document.getElementById('lead-source').value.split('|');
+  const perLead = parseFloat(costStr) || 0;
+  if (count > 0 && perLead > 0) {
+    document.getElementById('lead-cost').value = (count * perLead).toFixed(2);
+  } else if (perLead === 0) {
+    document.getElementById('lead-cost').value = 0;
+  }
+}
+
+function submitLeads() {
+  const count = parseInt(document.getElementById('lead-count').value);
+  const cost = parseFloat(document.getElementById('lead-cost').value);
+  if (!count || count <= 0) { alert('Enter a valid lead count'); return; }
+  const [name] = document.getElementById('lead-source').value.split('|');
+
+  const lead = {
+    id: 'lead_' + Date.now(),
+    date: todayStr(),
+    source: name,
+    count,
+    cost: isNaN(cost) ? 0 : cost
+  };
+  data.leads.push(lead);
+  data.history.push({ type: 'lead', id: lead.id });
+  saveData(data);
+  closeModal('lead-modal');
+  render();
+  toast(count + ' LEADS LOGGED');
+}
+
+// ============================================================
+// CALCULATIONS
+// ============================================================
+function aggregateActivity(scope) {
+  const sum = { dials: 0, contacts: 0, phoneContacts: 0, smsContacts: 0, appts: 0, pitches: 0, followups: 0 };
+  data.activity.filter(a => inScope(a.date, scope)).forEach(a => {
+    sum.dials += a.dials || 0;
+    sum.contacts += a.contacts || 0;
+    sum.phoneContacts += a.phoneContacts || 0;
+    sum.smsContacts += a.smsContacts || 0;
+    sum.appts += a.appts || 0;
+    sum.pitches += a.pitches || 0;
+    sum.followups += a.followups || 0;
+  });
+  return sum;
+}
+
+function aggregateApps(scope) {
+  const apps = data.apps.filter(a => inScope(a.date, scope));
+  const totalAV = apps.reduce((s, a) => s + a.av, 0);
+  const totalAdvance = apps.reduce((s, a) => s + a.advance, 0);
+  const totalFullYear = apps.reduce((s, a) => s + a.fullYear, 0);
+  return { apps, count: apps.length, totalAV, totalAdvance, totalFullYear };
+}
+
+function aggregateLeads(scope) {
+  const leads = data.leads.filter(l => inScope(l.date, scope));
+  const totalCount = leads.reduce((s, l) => s + l.count, 0);
+  const totalCost = leads.reduce((s, l) => s + l.cost, 0);
+  return { leads, totalCount, totalCost };
+}
+
+function pct(num, den) { return den > 0 ? ((num / den) * 100).toFixed(1) + '%' : '—'; }
+function div(num, den) { return den > 0 ? (num / den).toFixed(1) : '—'; }
+function money(n) { return '$' + (n || 0).toLocaleString('en-US', { maximumFractionDigits: 0 }); }
+
+function calcPoints(scope) {
+  const a = aggregateActivity(scope);
+  const apps = aggregateApps(scope).count;
+  return a.dials*1 + a.contacts*5 + a.appts*15 + a.pitches*25 + a.followups*10 + apps*100;
+}
+
+// ============================================================
+// RENDER
+// ============================================================
+let currentScope = 'today';
+
+function setScope(s, btn) {
+  currentScope = s;
+  document.querySelectorAll('.date-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  render();
+}
+
+function render() {
+  renderCounts();
+  renderHunt();
+  renderActivity();
+  renderConversion();
+  renderEfficiency();
+  renderRevenue();
+  renderBreakdowns();
+}
+
+function renderCounts() {
+  // Always show today's counts in the action bar
+  const t = data.activity.find(a => a.date === todayStr()) || { dials:0,contacts:0,appts:0,pitches:0,followups:0 };
+  document.getElementById('cnt-dials').textContent = t.dials;
+  document.getElementById('cnt-contacts').textContent = t.contacts;
+  document.getElementById('cnt-appts').textContent = t.appts;
+  document.getElementById('cnt-pitches').textContent = t.pitches;
+  document.getElementById('cnt-followups').textContent = t.followups;
+}
+
+function renderHunt() {
+  const a = aggregateActivity(currentScope);
+  const apps = aggregateApps(currentScope).count;
+  const pts = calcPoints(currentScope);
+
+  const targets = { today: 150, week: 900, month: 4000, quarter: 12000 };
+  const labels = {
+    today: ['The Hunt · Today', 'Daily Target: 150 pts'],
+    week: ['The Hunt · This Week', 'Weekly Target: 900 pts'],
+    month: ['The Hunt · This Month', 'Monthly Target: 4,000 pts'],
+    quarter: ['The Hunt · 3 Months', 'Quarterly Target: 12,000 pts']
+  };
+  const target = targets[currentScope];
+  document.getElementById('hunt-title').textContent = labels[currentScope][0];
+  document.getElementById('hunt-target').textContent = labels[currentScope][1];
+  document.getElementById('hunt-score').textContent = pts.toLocaleString();
+  document.getElementById('hunt-goal').textContent = target.toLocaleString();
+  const pctVal = (pts / target) * 100;
+  document.getElementById('hunt-progress').style.width = Math.min(pctVal, 100) + '%';
+  document.getElementById('hunt-percent').textContent = pctVal.toFixed(0) + '% OF TARGET';
+
+  document.getElementById('p-dials').textContent = a.dials;
+  document.getElementById('p-contacts').textContent = a.contacts;
+  document.getElementById('p-appts').textContent = a.appts;
+  document.getElementById('p-pitches').textContent = a.pitches;
+  document.getElementById('p-followups').textContent = a.followups;
+  document.getElementById('p-apps').textContent = apps;
+}
+
+function renderActivity() {
+  const a = aggregateActivity(currentScope);
+  const apps = aggregateApps(currentScope).count;
+  document.getElementById('activity-cards').innerHTML = `
+    <div class="card"><div class="card-label">Dials</div><div class="card-value">${a.dials}</div></div>
+    <div class="card"><div class="card-label">Phone Contacts</div><div class="card-value">${a.contacts}</div></div>
+    <div class="card"><div class="card-label">Appts Booked</div><div class="card-value">${a.appts}</div></div>
+    <div class="card"><div class="card-label">Pitches (1st Calls)</div><div class="card-value">${a.pitches}</div></div>
+    <div class="card"><div class="card-label">Follow-up Calls</div><div class="card-value">${a.followups}</div></div>
+    <div class="card"><div class="card-label">Applications</div><div class="card-value">${apps}</div></div>
+  `;
+}
+
+function renderConversion() {
+  const a = aggregateActivity(currentScope);
+  const appAgg = aggregateApps(currentScope);
+  const leadAgg = aggregateLeads(currentScope);
+
+  const contactRate = pct(a.phoneContacts, a.dials);
+  const leadToDeal = pct(appAgg.count, leadAgg.totalCount);
+  const apptShow = pct(a.pitches, a.appts);
+  const firstCallClose = pct(appAgg.apps.filter(x => x.closeType === '1st Call').length, appAgg.count);
+  const secondCallClose = pct(appAgg.apps.filter(x => x.closeType === '2nd Call').length, appAgg.count);
+  const closeRate = pct(appAgg.count, a.appts);
+  const followupRatio = a.pitches > 0 ? (a.followups / a.pitches).toFixed(1) : '—';
+
+  function bench(val, lo, hi, std) {
+    if (val === '—') return `<span class="benchmark">Std ${std}</span>`;
+    const n = parseFloat(val);
+    if (n >= lo && n <= hi * 1.5) return `<span class="benchmark pass">Std ${std} ✓</span>`;
+    if (n < lo) return `<span class="benchmark warn">Std ${std} ⚠</span>`;
+    return `<span class="benchmark pass">Std ${std} ✓</span>`;
+  }
+
+  document.getElementById('conversion-cards').innerHTML = `
+    <div class="card"><div class="card-label">Phone Contact Rate</div><div class="card-value">${contactRate}</div><div class="card-sub">${bench(contactRate, 20, 30, '20-30%')}</div></div>
+    <div class="card"><div class="card-label">SMS Contacts</div><div class="card-value">${a.smsContacts}</div><div class="card-sub">Replies / engagement</div></div>
+    <div class="card"><div class="card-label">Lead → Deal</div><div class="card-value">${leadToDeal}</div><div class="card-sub">${bench(leadToDeal, 5, 10, '5-10%')}</div></div>
+    <div class="card"><div class="card-label">Appt Show Rate</div><div class="card-value">${apptShow}</div><div class="card-sub">${bench(apptShow, 60, 80, '60-80%')}</div></div>
+    <div class="card"><div class="card-label">1st Call Close</div><div class="card-value">${firstCallClose}</div><div class="card-sub">${bench(firstCallClose, 30, 50, '30-50%')}</div></div>
+    <div class="card"><div class="card-label">2nd Call Close</div><div class="card-value">${secondCallClose}</div><div class="card-sub">${bench(secondCallClose, 40, 60, '40-60%')}</div></div>
+    <div class="card"><div class="card-label">Close Rate</div><div class="card-value">${closeRate}</div><div class="card-sub">${bench(closeRate, 35, 50, '35-50%')}</div></div>
+    <div class="card"><div class="card-label">Follow-up Ratio</div><div class="card-value">${followupRatio}</div><div class="card-sub">Std 0.8-1.5</div></div>
+    <div class="card"><div class="card-label">Leads Added</div><div class="card-value">${leadAgg.totalCount}</div><div class="card-sub">${leadAgg.leads.length} purchases</div></div>
+  `;
+}
+
+function renderEfficiency() {
+  const a = aggregateActivity(currentScope);
+  const apps = aggregateApps(currentScope).count;
+  const leadAgg = aggregateLeads(currentScope);
+
+  document.getElementById('efficiency-cards').innerHTML = `
+    <div class="card"><div class="card-label">Dials per Appt</div><div class="card-value">${div(a.dials, a.appts)}</div></div>
+    <div class="card"><div class="card-label">Dials per Deal</div><div class="card-value">${div(a.dials, apps)}</div></div>
+    <div class="card"><div class="card-label">Leads per Deal</div><div class="card-value">${div(leadAgg.totalCount, apps)}</div></div>
+    <div class="card"><div class="card-label">Avg Follow-ups</div><div class="card-value">${div(a.followups, apps)}</div></div>
+  `;
+}
+
+function renderRevenue() {
+  const a = aggregateActivity(currentScope);
+  const appAgg = aggregateApps(currentScope);
+  const leadAgg = aggregateLeads(currentScope);
+
+  const avgAV = appAgg.count > 0 ? appAgg.totalAV / appAgg.count : 0;
+  const costPerDeal = appAgg.count > 0 ? leadAgg.totalCost / appAgg.count : 0;
+  const avPerLead = leadAgg.totalCount > 0 ? appAgg.totalAV / leadAgg.totalCount : 0;
+  const roi = leadAgg.totalCost > 0 ? ((appAgg.totalAV / leadAgg.totalCost) * 100).toFixed(0) + '%' : '∞';
+  const perDial = a.dials > 0 ? appAgg.totalAdvance / a.dials : 0;
+
+  document.getElementById('revenue-cards').innerHTML = `
+    <div class="card hero-card">
+      <div class="card-label">Advance Commission</div>
+      <div class="card-value">${money(appAgg.totalAdvance)}</div>
+      <div class="card-sub">Full Year Value: ${money(appAgg.totalFullYear)}</div>
+    </div>
+    <div class="card"><div class="card-label">Total AV</div><div class="card-value">${money(appAgg.totalAV)}</div></div>
+    <div class="card"><div class="card-label">Avg AV/Deal</div><div class="card-value">${money(avgAV)}</div></div>
+    <div class="card"><div class="card-label">Lead Spend</div><div class="card-value">${money(leadAgg.totalCost)}</div></div>
+    <div class="card"><div class="card-label">Cost per Deal</div><div class="card-value">${money(costPerDeal)}</div></div>
+    <div class="card"><div class="card-label">AV per Lead</div><div class="card-value">${money(avPerLead)}</div></div>
+    <div class="card"><div class="card-label">ROI on Leads</div><div class="card-value">${roi}</div></div>
+    <div class="card"><div class="card-label">$ per Dial</div><div class="card-value">${money(perDial)}</div></div>
+  `;
+}
+
+function renderBreakdowns() {
+  const appAgg = aggregateApps(currentScope);
+  const leadAgg = aggregateLeads(currentScope);
+
+  // By Lead Source
+  const sources = {};
+  leadAgg.leads.forEach(l => {
+    if (!sources[l.source]) sources[l.source] = { leads:0, cost:0, deals:0, av:0 };
+    sources[l.source].leads += l.count;
+    sources[l.source].cost += l.cost;
+  });
+  appAgg.apps.forEach(a => {
+    if (!sources[a.source]) sources[a.source] = { leads:0, cost:0, deals:0, av:0 };
+    sources[a.source].deals += 1;
+    sources[a.source].av += a.av;
+  });
+  const sourceKeys = Object.keys(sources).sort((a,b) => sources[b].av - sources[a].av);
+  let sourceRows = sourceKeys.map(k => {
+    const s = sources[k];
+    const roi = s.cost > 0 ? ((s.av / s.cost) * 100).toFixed(0) + '%' : (s.av > 0 ? '∞' : '—');
+    return `<tr><td>${k}</td><td class="right">${s.leads}</td><td class="right">${money(s.cost)}</td><td class="right">${s.deals}</td><td class="right money">${money(s.av)}</td><td class="right">${roi}</td></tr>`;
+  }).join('');
+  if (!sourceRows) sourceRows = `<tr><td colspan="6" class="empty-note">No data yet — log apps or leads to see breakdown</td></tr>`;
+
+  // By Channel
+  const channels = {};
+  appAgg.apps.forEach(a => {
+    if (!channels[a.channel]) channels[a.channel] = { deals:0, av:0 };
+    channels[a.channel].deals += 1;
+    channels[a.channel].av += a.av;
+  });
+  let channelRows = Object.keys(channels).map(k => {
+    const c = channels[k];
+    return `<tr><td>${k}</td><td class="right">${c.deals}</td><td class="right money">${money(c.av)}</td></tr>`;
+  }).join('');
+  if (!channelRows) channelRows = `<tr><td colspan="3" class="empty-note">No apps logged yet</td></tr>`;
+
+  // Close Type
+  const closes = { '1st Call': { deals:0, av:0 }, '2nd Call': { deals:0, av:0 }, '3+ Calls': { deals:0, av:0 } };
+  appAgg.apps.forEach(a => {
+    if (closes[a.closeType]) {
+      closes[a.closeType].deals += 1;
+      closes[a.closeType].av += a.av;
+    }
+  });
+  const closeRows = Object.keys(closes).map(k => {
+    const c = closes[k];
+    const pctStr = appAgg.count > 0 ? ((c.deals / appAgg.count) * 100).toFixed(0) + '%' : '0%';
+    return `<tr><td>${k}</td><td class="right">${c.deals}</td><td class="right money">${money(c.av)}</td><td class="right">${pctStr}</td></tr>`;
+  }).join('');
+
+  document.getElementById('breakdowns').innerHTML = `
+    <div class="table-card">
+      <h3>By Lead Source</h3>
+      <table>
+        <thead><tr><th>Source</th><th class="right">Leads</th><th class="right">Spend</th><th class="right">Deals</th><th class="right">AV</th><th class="right">ROI</th></tr></thead>
+        <tbody>${sourceRows}</tbody>
+      </table>
+    </div>
+    <div class="table-card">
+      <h3>By Appt Channel</h3>
+      <table>
+        <thead><tr><th>Channel</th><th class="right">Deals</th><th class="right">AV</th></tr></thead>
+        <tbody>${channelRows}</tbody>
+      </table>
+    </div>
+    <div class="table-card">
+      <h3>Close Type</h3>
+      <table>
+        <thead><tr><th>Type</th><th class="right">Deals</th><th class="right">AV</th><th class="right">%</th></tr></thead>
+        <tbody>${closeRows}</tbody>
+      </table>
+    </div>
+    <div class="table-card">
+      <h3>Recent Applications</h3>
+      <table>
+        <thead><tr><th>Date</th><th>Products</th><th class="right">AV</th><th class="right">Commission</th></tr></thead>
+        <tbody>
+          ${appAgg.apps.slice(-5).reverse().map(a => {
+            const productLabel = a.productCount > 1 ? `${a.product} +${a.productCount - 1}` : (a.product || '—');
+            return `<tr><td>${a.date}</td><td>${productLabel}</td><td class="right money">${money(a.av)}</td><td class="right money">${money(a.advance)}</td></tr>`;
+          }).join('') || '<tr><td colspan="4" class="empty-note">No apps logged yet</td></tr>'}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+// ============================================================
+// UTILITIES
+// ============================================================
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 1800);
+}
+
+function exportCSV() {
+  let csv = 'ACTIVITY\nDate,Dials,Contacts,PhoneContacts,SMSContacts,Appts,Pitches,Follow-ups\n';
+  data.activity.forEach(a => { csv += `${a.date},${a.dials||0},${a.contacts||0},${a.phoneContacts||0},${a.smsContacts||0},${a.appts||0},${a.pitches||0},${a.followups||0}\n`; });
+  csv += '\nAPPLICATIONS\nDate,Primary Product,Product Count,Total Premium,State,Source,CloseType,Channel,Total AV,Total Advance,Total FullYear\n';
+  data.apps.forEach(a => { csv += `${a.date},${a.product},${a.productCount || 1},${a.premium.toFixed(2)},${a.state},${a.source},${a.closeType},${a.channel},${a.av.toFixed(2)},${a.advance.toFixed(2)},${a.fullYear.toFixed(2)}\n`; });
+
+  csv += '\nAPPLICATION LINE ITEMS\nDate,App ID,Product,Monthly Premium,Rate%,AV,Advance,FullYear\n';
+  data.apps.forEach(a => {
+    if (a.items && a.items.length) {
+      a.items.forEach(i => {
+        csv += `${a.date},${a.id},${i.product},${i.premium.toFixed(2)},${i.rate},${i.av.toFixed(2)},${i.advance.toFixed(2)},${i.fullYear.toFixed(2)}\n`;
+      });
+    }
+  });
+  csv += '\nLEADS\nDate,Source,Count,Cost\n';
+  data.leads.forEach(l => { csv += `${l.date},${l.source},${l.count},${l.cost.toFixed(2)}\n`; });
+
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `the-system-backup-${todayStr()}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('CSV EXPORTED');
+}
+
+function viewRawData() {
+  alert(JSON.stringify(data, null, 2));
+}
+
+function resetData() {
+  if (!confirm('Reset ALL data? This cannot be undone. Export CSV first if you want a backup.')) return;
+  if (!confirm('Really sure? Everything will be wiped.')) return;
+  localStorage.removeItem(STORAGE_KEY);
+  data = loadData();
+  render();
+  toast('DATA RESET');
+}
+
+// Initial render
+render();
+</script>
+</body>
+</html>
