@@ -459,6 +459,7 @@
   <div class="header">
     <h1>THE SYSTEM</h1>
     <p>TrueClarity Plans · Built To Duplicate</p>
+    <p class="header-date" id="header-date" style="margin-top: 10px; color: #FFFFFF; font-size: 14px; letter-spacing: 2px; font-weight: 600;"></p>
   </div>
 
   <div class="date-filters">
@@ -466,6 +467,7 @@
     <button class="date-btn" data-scope="week" onclick="setScope('week', this)">This Week</button>
     <button class="date-btn" data-scope="month" onclick="setScope('month', this)">This Month</button>
     <button class="date-btn" data-scope="quarter" onclick="setScope('quarter', this)">3 Months</button>
+    <button class="date-btn history-btn" onclick="openHistory()" style="border-color: rgba(0,200,83,0.5); color: #00C853;">📋 View History</button>
   </div>
 
   <!-- HUNT PANEL -->
@@ -623,6 +625,20 @@
       <button class="btn-cancel" onclick="closeModal('lead-modal')">Cancel</button>
       <button class="btn-submit" onclick="submitLeads()">Log Leads</button>
     </div>
+  </div>
+</div>
+
+<!-- HISTORY MODAL -->
+<div class="modal-overlay" id="history-modal">
+  <div class="modal" style="max-width: 760px; padding: 0;">
+    <div style="display: flex; justify-content: space-between; align-items: center; padding: 24px 28px 20px; border-bottom: 1px solid rgba(255,255,255,0.1);">
+      <div>
+        <h2 style="margin: 0; font-size: 22px; letter-spacing: 4px; color: #FFFFFF;">HUNT LOG</h2>
+        <div id="history-summary" style="font-size: 11px; color: #8B9DC3; margin-top: 6px; letter-spacing: 1px;"></div>
+      </div>
+      <button class="btn-cancel" onclick="closeModal('history-modal')" style="border: 1px solid rgba(255,255,255,0.2); background: transparent; color: #FFF; padding: 8px 18px;">CLOSE</button>
+    </div>
+    <div id="history-list" style="padding: 8px 28px 28px;"></div>
   </div>
 </div>
 
@@ -999,6 +1015,7 @@ function setScope(s, btn) {
 }
 
 function render() {
+  renderHeaderDate();
   renderCounts();
   renderHunt();
   renderActivity();
@@ -1006,6 +1023,13 @@ function render() {
   renderEfficiency();
   renderRevenue();
   renderBreakdowns();
+}
+
+function renderHeaderDate() {
+  const now = new Date();
+  const opts = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+  const el = document.getElementById('header-date');
+  if (el) el.textContent = now.toLocaleDateString('en-US', opts);
 }
 
 function renderCounts() {
@@ -1270,6 +1294,85 @@ function resetData() {
   data = loadData();
   render();
   toast('DATA RESET');
+}
+
+// ============================================================
+// HISTORY MODAL
+// ============================================================
+function openHistory() {
+  renderHistory();
+  document.getElementById('history-modal').classList.add('active');
+}
+
+function renderHistory() {
+  // Build a date-keyed map: stats per day from activity + apps + commission
+  const map = {};
+
+  data.activity.forEach(d => {
+    if (!map[d.date]) map[d.date] = { date: d.date, dials:0, contacts:0, smsContacts:0, appts:0, pitches:0, followups:0, apps:0, advance:0 };
+    map[d.date].dials += d.dials || 0;
+    map[d.date].contacts += d.phoneContacts || d.contacts || 0;
+    map[d.date].smsContacts += d.smsContacts || 0;
+    map[d.date].appts += d.appts || 0;
+    map[d.date].pitches += d.pitches || 0;
+    map[d.date].followups += d.followups || 0;
+  });
+
+  data.apps.forEach(app => {
+    if (!map[app.date]) map[app.date] = { date: app.date, dials:0, contacts:0, smsContacts:0, appts:0, pitches:0, followups:0, apps:0, advance:0 };
+    map[app.date].apps += 1;
+    map[app.date].advance += app.advance || 0;
+  });
+
+  // Sort newest first
+  const days = Object.values(map).sort((a, b) => b.date.localeCompare(a.date));
+
+  if (days.length === 0) {
+    document.getElementById('history-list').innerHTML = '<div style="text-align:center; color:#8B9DC3; padding:40px 0; letter-spacing:2px; font-size:12px;">NO HISTORY YET — START LOGGING</div>';
+    document.getElementById('history-summary').textContent = '';
+    return;
+  }
+
+  // Summary line: total days, green days
+  let greenDays = 0;
+  days.forEach(d => {
+    const pts = d.dials*1 + d.contacts*5 + d.appts*15 + d.pitches*25 + d.followups*10 + d.apps*100;
+    if (pts >= 150) greenDays++;
+  });
+  document.getElementById('history-summary').textContent = `${days.length} DAYS LOGGED · ${greenDays} GREEN DAYS`;
+
+  // Render each row
+  const rows = days.map(d => {
+    const pts = d.dials*1 + d.contacts*5 + d.appts*15 + d.pitches*25 + d.followups*10 + d.apps*100;
+    const isGreen = pts >= 150;
+    const ptsColor = isGreen ? '#00C853' : '#8B9DC3';
+    const ptsLabel = isGreen ? 'GREEN' : 'below target';
+
+    // Format date: "Mon Apr 27 2026"
+    const dateObj = new Date(d.date + 'T12:00:00');
+    const dateStr = dateObj.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+
+    const advanceStr = d.advance > 0 ? `$${d.advance.toLocaleString(undefined, {maximumFractionDigits:0})} commission` : '$0 commission';
+    const smsStr = d.smsContacts > 0 ? ` · ${d.smsContacts} sms` : '';
+
+    return `
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; padding:18px 0; border-bottom:1px solid rgba(255,255,255,0.08);">
+        <div style="flex:1;">
+          <div style="font-size:16px; font-weight:700; color:#FFF; letter-spacing:1px; margin-bottom:6px;">${dateStr}</div>
+          <div style="font-size:12px; color:#8B9DC3; line-height:1.6;">
+            ${d.dials} dials · ${d.contacts} contacts${smsStr} · ${d.appts} appts · ${d.pitches} pitches · ${d.followups} follow-ups · ${d.apps} apps<br>
+            ${advanceStr}
+          </div>
+        </div>
+        <div style="text-align:right; min-width:90px; margin-left:16px;">
+          <div style="font-size:28px; font-weight:900; color:${ptsColor}; line-height:1;">${pts}</div>
+          <div style="font-size:10px; color:${ptsColor}; letter-spacing:1px; margin-top:4px; text-transform:uppercase;">${ptsLabel}</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  document.getElementById('history-list').innerHTML = rows;
 }
 
 // Initial render
